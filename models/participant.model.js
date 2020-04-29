@@ -9,7 +9,7 @@ const schema = new Schema(
     championId: { type: Number, required: true, index: true },
     win: { type: Boolean, required: true, index: true },
     teamId: { type: Number, required: true },
-    role: { type: String, required: true, index: true },
+    role: { type: Number, required: true, index: true },
     spell1Id: { type: Number },
     spell2Id: { type: Number },
     item0: {

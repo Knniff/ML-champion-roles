@@ -8,6 +8,23 @@ const db = require("../_helpers/db");
 // loads the Models
 const { Match, Participant } = db;
 
+function clasNummFromrole(role) {
+  switch (classNum) {
+    case "midlaner":
+      return 0;
+    case "jungler":
+      return 1;
+    case "carry":
+      return 2;
+    case "support":
+      return 3;
+    case "toplaner":
+      return 4;
+    default:
+      return "Unknown";
+  }
+}
+
 async function saveParticipants(matches, matchList) {
   var participants = [];
   matches.forEach((match) => {
@@ -15,14 +32,24 @@ async function saveParticipants(matches, matchList) {
       (game) => game.gameId === match.gameId.toString(),
     );
     match.participants.forEach((element) => {
-      let participant = new Participant();
+      let participant = new Participant({
+        creepsPerMinDeltas: {},
+        xpPerMinDeltas: {},
+        goldPerMinDeltas: {},
+        csDiffPerMinDeltas: {},
+        xpDiffPerMinDeltas: {},
+        damageTakenPerMinDeltas: {},
+        damageTakenDiffPerMinDeltas: {},
+      });
       //summonerId
       let result = match.participantIdentities.find(
         (player) => player.participantId === element.participantId,
       );
       participant.summonerId = result.player.summonerId;
 
-      participant.role = roleData[element.participantId.toString()];
+      participant.role = clasNummFromrole(
+        roleData[element.participantId.toString()],
+      );
 
       participant.matchId = match.gameId;
       participant.championId = element.championId;
@@ -123,12 +150,64 @@ async function saveParticipants(matches, matchList) {
       participant.statPerk0 = element.stats.statPerk0;
       participant.statPerk1 = element.stats.statPerk1;
       participant.statPerk2 = element.stats.statPerk2;
+
+      for (let key in element.timeline.creepsPerMinDeltas) {
+        if (element.timeline.creepsPerMinDeltas.hasOwnProperty(key)) {
+          let temporary = element.timeline.creepsPerMinDeltas[key];
+          participant.creepsPerMinDeltas.set(key, temporary);
+        }
+      }
+      for (let key in element.timeline.xpPerMinDeltas) {
+        if (element.timeline.xpPerMinDeltas.hasOwnProperty(key)) {
+          let temporary = element.timeline.xpPerMinDeltas[key];
+          participant.xpPerMinDeltas.set(key, temporary);
+        }
+      }
+      for (let key in element.timeline.goldPerMinDeltas) {
+        if (element.timeline.goldPerMinDeltas.hasOwnProperty(key)) {
+          let temporary = element.timeline.goldPerMinDeltas[key];
+          participant.goldPerMinDeltas.set(key, temporary);
+        }
+      }
+      for (let key in element.timeline.csDiffPerMinDeltas) {
+        if (element.timeline.csDiffPerMinDeltas.hasOwnProperty(key)) {
+          let temporary = element.timeline.csDiffPerMinDeltas[key];
+          participant.csDiffPerMinDeltas.set(key, temporary);
+        }
+      }
+      for (let key in element.timeline.xpDiffPerMinDeltas) {
+        if (element.timeline.xpDiffPerMinDeltas.hasOwnProperty(key)) {
+          let temporary = element.timeline.xpDiffPerMinDeltas[key];
+          participant.xpDiffPerMinDeltas.set(key, temporary);
+        }
+      }
+      for (let key in element.timeline.damageTakenPerMinDeltas) {
+        if (
+          element.timeline.damageTakenPerMinDeltas.hasOwnProperty(key)
+        ) {
+          let temporary =
+            element.timeline.damageTakenPerMinDeltas[key];
+          participant.damageTakenPerMinDeltas.set(key, temporary);
+        }
+      }
+      for (let key in element.timeline.damageTakenDiffPerMinDeltas) {
+        if (
+          element.timeline.damageTakenDiffPerMinDeltas.hasOwnProperty(
+            key,
+          )
+        ) {
+          let temporary =
+            element.timeline.damageTakenDiffPerMinDeltas[key];
+          participant.damageTakenDiffPerMinDeltas.set(key, temporary);
+        }
+      }
+      participants.push(participant);
     });
   });
+  Participant.insertMany(participants);
 }
 
 async function saveMatches(matchList) {
-  console.log(matchList.length + "                 SaveMatches");
   var save = [];
   var getMatches = matchList.map((tempor) => {
     return apiService.match(tempor.gameId).catch((err) => {
@@ -189,12 +268,12 @@ async function saveMatches(matchList) {
     });
     save.push(match);
   });
-  //Match.insertMany(save);
+  Match.insertMany(save);
 }
 
-async function allMatches() {
+async function allMatches(fileName) {
   var matchList = [];
-  fs.createReadStream("data.csv")
+  fs.createReadStream(fileName)
     .pipe(csv())
     .on("data", (row) => {
       matchList.push(row);

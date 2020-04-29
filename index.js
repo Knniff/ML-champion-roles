@@ -1,4 +1,5 @@
 require("dotenv").config();
 const matchService = require("./_helpers/match.service");
 
-matchService.allMatches();
+// Gather the Matchdata
+//matchService.allMatches("data.csv");

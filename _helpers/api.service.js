@@ -60,6 +60,13 @@ async function match(matchId) {
         err.message,
       );
     });
+  if (data.status) {
+    throw new ErrorHelper(
+      "Internal Server Error",
+      data.status.status_code,
+      "Riot-API failure or wrong API-key.",
+    );
+  }
   return data;
 }
 
@@ -110,6 +117,13 @@ async function matchtimeline(matchId) {
         err.message,
       );
     });
+  if (data.status) {
+    throw new ErrorHelper(
+      "Internal Server Error",
+      data.status.status_code,
+      "Riot-API failure or wrong API-key.",
+    );
+  }
   return data;
 }
 
