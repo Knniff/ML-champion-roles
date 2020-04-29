@@ -9,7 +9,7 @@ const db = require("../_helpers/db");
 const { Match, Participant } = db;
 
 function clasNummFromrole(role) {
-  switch (classNum) {
+  switch (role) {
     case "midlaner":
       return 0;
     case "jungler":
