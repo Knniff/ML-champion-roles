@@ -1,4 +1,5 @@
 const tf = require("@tensorflow/tfjs");
+require("@tensorflow/tfjs-node-gpu");
 
 const db = require("./_helpers/db");
 const { Participant } = db;
@@ -7,7 +8,7 @@ item.championId,item.spell1Id,item.spell2Id,item.item0,item.item1,item.item2,ite
 */
 //keep in mind ORACLE ELIXIR DATA
 
-// Returns the string value for Baseball pitch labels
+// Returns the string value for role numbers
 function roleFromClassNum(classNum) {
   switch (classNum) {
     case 0:
@@ -96,7 +97,7 @@ async function runModel() {
   );
   model.add(tf.layers.dense({ units: 175, activation: "sigmoid" }));
   model.add(tf.layers.dense({ units: 150, activation: "sigmoid" }));
-  model.add(tf.layers.dense({ units: 125, activation: "sigmoid" }));
+  model.add(tf.layers.dense({ units: 150, activation: "sigmoid" }));
   model.add(
     tf.layers.dense({
       units: 5,
@@ -111,12 +112,47 @@ async function runModel() {
 
   const startTime = Date.now();
   model
-    .fit(trainingData, outputData, { epochs: 100 })
+    .fit(trainingData, outputData, { epochs: 5000 })
     .then((history) => {
       console.log("done!", Date.now() - startTime);
     });
+  await model.save("file://./modelv1");
+}
+
+async function predict() {
+  var test = await Participant.find().sort({ _id: -1 }).limit(20);
+  console.log(test);
+  const testingData = tf.tensor2d(
+    test.map((item) => [
+      item.championId,
+      item.spell1Id,
+      item.spell2Id,
+      item.item0,
+      item.item1,
+      item.item2,
+      item.item3,
+      item.item4,
+      item.item5,
+      item.item6,
+      item.totalDamageDealt,
+      item.totalDamageDealtToChampions,
+      item.totalHeal,
+      item.goldEarned,
+      item.totalMinionsKilled,
+      item.neutralMinionsKilled,
+      item.champLevel,
+      item.perkPrimaryStyle,
+      item.perkSubStyle,
+    ]),
+  );
+  const model = await tf.loadLayersModel(
+    "file://./modelv1/model.json",
+  );
+  const prediction = model.predict(testingData);
+  prediction.print();
 }
 
 module.exports = {
   runModel,
+  predict,
 };

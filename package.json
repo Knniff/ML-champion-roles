@@ -24,6 +24,7 @@
   "homepage": "https://github.com/Knniff/ML-champion-roles#readme",
   "dependencies": {
     "@tensorflow/tfjs": "^1.7.4",
+    "@tensorflow/tfjs-node-gpu": "^1.7.4",
     "csv-parser": "^2.3.2",
     "mongodb": "^3.5.6",
     "mongoose": "^5.9.10",

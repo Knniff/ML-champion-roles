@@ -7,3 +7,5 @@ const modelCreation = require("./model-creation");
 
 //make the model
 modelCreation.runModel();
+
+//modelCreation.predict();
